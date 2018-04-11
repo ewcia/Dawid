@@ -1,3 +1,6 @@
+@image-height: 100vh;
+@animation-time: 2s;
+
 
 html, body {
   font-family: 'Lato', sans-serif;
@@ -12,3 +15,69 @@ html, body {
 a {
   cursor: pointer;
 }
+
+.slideshow {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+
+  img {
+    height: 100%;
+    width: 100%;
+
+    &.slide {
+      animation: slide @animation-time 1;
+      animation-fill-mode: forwards;
+    }
+
+    &.slide-down {
+      animation: slide-down @animation-time 1;
+      animation-fill-mode: forwards;
+    }
+  }
+}
+
+.nav {
+  position: absolute;
+  right: 0;
+  top: 40vh;
+
+  width: 30px;
+  min-height: 100px;
+
+  div {
+    user-select: none;
+    cursor: pointer;
+  }
+
+  .prev,.next {
+    margin-left: 5px;
+  }
+
+  .circle {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@keyframes slide {
+  0% {
+    transform: translateY(0px);
+  }
+
+  100% {
+    transform: translateY(-@image-height);
+  }
+}
+
+@keyframes slide-down {
+  0% {
+    transform: translateY(-@image-height)
+  }
+
+  100% {
+    transform: translateY(0px)
+  }
+}
+
