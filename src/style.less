@@ -1,5 +1,6 @@
 @image-height: 100vh;
-@animation-time: 2s;
+@animation-time: 1s;
+@transition-fn: cubic-bezier(0.215, 0.61, 0.355, 1); 
 
 
 html, body {
@@ -26,12 +27,12 @@ a {
     width: 100%;
 
     &.slide {
-      animation: slide @animation-time 1;
+      animation: slide @animation-time @transition-fn;
       animation-fill-mode: forwards;
     }
 
     &.slide-down {
-      animation: slide-down @animation-time 1;
+      animation: slide-down @animation-time @transition-fn;
       animation-fill-mode: forwards;
     }
   }

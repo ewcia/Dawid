@@ -4,22 +4,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 
 module.exports = {
-  context: __dirname + "/src",
-  entry: './index.js',
+  entry: './lib/js/src/main.js',
   output: {
     path: __dirname + "/dist",
     filename: "[name].js"
   },
   module: {
     loaders: [
-      {
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'babel-loader',
-      query: {
-        presets: ['env']
-      }
-    },
     {
       test: /\.css$/,
       loader: ExtractTextPlugin.extract("css-loader")
