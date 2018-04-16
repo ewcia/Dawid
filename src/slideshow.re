@@ -1,12 +1,8 @@
-type node;
-
 type slideState = Slide | SlideDown | Inactive;
-
-type eventCb('a) = 'a => unit;
 
 type slide = {
   isShown: bool,
-  node: node,
+  node: Dom.node,
   slideState: slideState,
 
   heading: string,
@@ -15,26 +11,17 @@ type slide = {
 
 type state = {
   slides: list(slide),
-  container: node,
-  callbacks: list(eventCb(int))
+  container: Dom.node,
+  observer: Observable.observer(state, string),
+  observable: Observable.observable(state, string)
 };
 
-type eventName;
-[@bs.val] external animationEnd: eventName = "animationend";
+let animationEnd = Dom.animationEnd;
 
-[@bs.send] external removeChild: (node, node) => unit = "";
-[@bs.send] external appendChild: (node, node) => unit = "";
-[@bs.send] external insertBefore: (node, node) => unit = "";
-[@bs.send] external addEventListener: (node, eventName, (unit => unit), bool) => unit = "";
-[@bs.send] external removeEventListener: (node, eventName, (unit => unit)) => unit = "";
-[@bs.scope "document"][@bs.val] external querySelector: (string) => node = "";
-
-[@bs.scope "classList"][@bs.send] external classListRemove: (node, string) => unit = "remove";
-[@bs.scope "classList"][@bs.send] external classListAdd: (node, string) => unit = "add";
 
 let clear = (state: state): state => {
   let slides = List.map(s => {
-    removeChild(state.container, s.node);
+    Dom.removeChild(state.container, s.node);
     {...s, isShown: false}
   }, state.slides);
 
@@ -44,8 +31,8 @@ let clear = (state: state): state => {
 let clearState = (slides: list(slide)): list(slide) => {
   List.map(slide => {
     switch (slide.slideState) {
-      | Slide => classListRemove(slide.node, "slide")
-      | SlideDown => classListRemove(slide.node, "slide-down")
+      | Slide => Dom.classListRemove(slide.node, "slide")
+      | SlideDown => Dom.classListRemove(slide.node, "slide-down")
       | Inactive => ()
     };
 
@@ -56,30 +43,41 @@ let clearState = (slides: list(slide)): list(slide) => {
 let showImage = (state: state, idx: int): state => {
   let slides = List.mapi((i, slide) => {
     if (i === idx) {
-      appendChild(state.container, slide.node);
+      Dom.appendChild(state.container, slide.node);
       {...slide, isShown: true};
     } else {
       slide;
     }
   }, state.slides);
 
-  {...state, slides};
+  let newState = {...state, slides};
+  state.observer#next(newState);
+  newState;
+};
+
+let replaceNth = (el: 'a, idx: int, list: list('a)): list('a) => {
+  List.mapi((i, ith) => i === idx ? el : ith, list);
 };
 
 let transitionBackwards = (state: state, idx: int): state => {
   let slides = List.mapi((i, slide) => {
     if (slide.isShown === true) {
-      classListAdd(slide.node, "slide-down");
+      let rec animationEndCb = () => {
+        Dom.removeChild(state.container, slide.node);
+        let s = replaceNth({...slide, isShown: false, slideState: Inactive});
+        let s' = replaceNth({...slide, isShown: true, slideState: Inactive});
+
+        state.observer#next({...state, slides: s'(idx, s(i, state.slides))});
+        Dom.removeEventListener(slide.node, animationEnd, animationEndCb);
+      };
+      Dom.addEventListener(slide.node, animationEnd, animationEndCb, false);
+
+      Dom.classListAdd(slide.node, "slide-down");
       {...slide, slideState: SlideDown};
     } else if (i === idx) {
-      insertBefore(state.container, slide.node);
-      classListAdd(slide.node, "slide-down");
-
-      let rec animationEndCb = () => {
-        removeChild(state.container, slide.node);
-        removeEventListener(slide.node, animationEnd, animationEndCb);
-      };
-      addEventListener(slide.node, animationEnd, animationEndCb, false);
+      let firstSlide = Array.get(Dom.children(state.container), 0);
+      Dom.insertBefore(slide.node, firstSlide);
+      Dom.classListAdd(slide.node, "slide-down");
 
       {...slide, isShown: true, slideState: SlideDown};
     } else {
@@ -91,8 +89,10 @@ let transitionBackwards = (state: state, idx: int): state => {
 };
 
 let create = (selector: string): state => {
-  let container = querySelector(selector);
-  let slideNodes: array(node) = [%bs.raw {| container.children |}];
+  let container = Dom.querySelector(Dom.document, selector);
+  let slideNodes: array(Dom.node) = [%bs.raw {| container.children |}];
+
+  let (observer, observable) = Observable.create();
 
   let slides = List.map(slide => {
     {
@@ -104,5 +104,5 @@ let create = (selector: string): state => {
     }
   }, Array.to_list(slideNodes));
 
-  clear({container, slides, callbacks: []});
+  clear({container, slides, observer, observable});
 };
