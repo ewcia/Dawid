@@ -10,18 +10,17 @@ type observer('a, 'b) = {.
   complete: unit => unit
 };
 
-type observableInternalModule('a, 'b) = {.
-  create: (observer('a, 'b) => unit) => observable('a, 'b)
-};
-
-
-[@bs.module "@reactivex/rxjs/es6/Observable"] external observableInternal: observableInternalModule('a, 'b) = "Observable";
+[@bs.scope "Observable"][@bs.module "@reactivex/rxjs/dist/cjs/Observable"][@bs.val] external createObservable: (observer('a, 'b) => unit) => observable('a, 'b) = "create";
 
 type create('a, 'b) = (unit) => (observer('a, 'b), observable('a, 'b));
 
 let create: create('a, 'b) = () => {
   let obs: ref(option(observer('a, 'b))) = ref(None);
-  let createResult = observableInternal#create((o) => obs := Some(o));
+  let createResult = createObservable((o) => {
+    Js.log("creator");
+    obs := Some(o);
+  });
 
+  Js.log(obs);
   (Js_option.getExn(obs^), createResult);
 };

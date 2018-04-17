@@ -10,17 +10,14 @@ type slide = {
 };
 
 type state = {
-  slides: list(slide),
+  slides: array(slide),
   container: Dom.node,
   observer: Observable.observer(state, string),
   observable: Observable.observable(state, string)
 };
 
-let animationEnd = Dom.animationEnd;
-
-
 let clear = (state: state): state => {
-  let slides = List.map(s => {
+  let slides = Array.map(s => {
     Dom.removeChild(state.container, s.node);
     {...s, isShown: false}
   }, state.slides);
@@ -41,51 +38,44 @@ let clearState = (slides: list(slide)): list(slide) => {
 };
 
 let showImage = (state: state, idx: int): state => {
-  let slides = List.mapi((i, slide) => {
-    if (i === idx) {
-      Dom.appendChild(state.container, slide.node);
-      {...slide, isShown: true};
-    } else {
-      slide;
-    }
-  }, state.slides);
+  Dom.appendChild(state.container, state.slides[idx].node);
+  state.slides[idx] = {...state.slides[idx], isShown: true};
 
-  let newState = {...state, slides};
-  state.observer#next(newState);
-  newState;
+  state;
 };
 
-let replaceNth = (el: 'a, idx: int, list: list('a)): list('a) => {
-  List.mapi((i, ith) => i === idx ? el : ith, list);
-};
+/* TODO: Use images, not indices */
 
 let transitionBackwards = (state: state, idx: int): state => {
-  let slides = List.mapi((i, slide) => {
-    if (slide.isShown === true) {
-      let rec animationEndCb = () => {
-        Dom.removeChild(state.container, slide.node);
-        let s = replaceNth({...slide, isShown: false, slideState: Inactive});
-        let s' = replaceNth({...slide, isShown: true, slideState: Inactive});
-
-        state.observer#next({...state, slides: s'(idx, s(i, state.slides))});
-        Dom.removeEventListener(slide.node, animationEnd, animationEndCb);
-      };
-      Dom.addEventListener(slide.node, animationEnd, animationEndCb, false);
-
-      Dom.classListAdd(slide.node, "slide-down");
-      {...slide, slideState: SlideDown};
-    } else if (i === idx) {
-      let firstSlide = Array.get(Dom.children(state.container), 0);
-      Dom.insertBefore(slide.node, firstSlide);
-      Dom.classListAdd(slide.node, "slide-down");
-
-      {...slide, isShown: true, slideState: SlideDown};
-    } else {
-      slide;
+  switch (Js_array.find(s => s.isShown, state.slides)) {
+    | None => {
+      state.observer#error("Cannot transition because no slide is shown");
+      state;
     }
-  }, state.slides);
+    | Some(shownSlide) => {
+      let slideToShow = state.slides[idx];
+      let shownSlideIdx = Js_array.findIndex((===)(shownSlide), state.slides);
 
-  {...state, slides};
+      Dom.classListAdd(shownSlide.node, "slide-down");
+      Dom.classListAdd(slideToShow.node, "slide-down");
+      Dom.insertBefore(state.container, slideToShow.node, shownSlide.node);
+
+      state.slides[shownSlideIdx] = {...shownSlide, slideState: SlideDown};
+      state.slides[idx] = {...slideToShow, isShown: true, slideState: SlideDown};
+
+      let rec animationEndCb = () => {
+        Dom.removeChild(state.container, shownSlide.node);
+        state.slides[shownSlideIdx] = {...shownSlide, isShown: false, slideState: Inactive};
+        state.slides[idx] = {...state.slides[idx], slideState: Inactive};
+        state.observer#next(state);
+
+        Dom.removeEventListener(slideToShow.node, Dom.animationEnd, animationEndCb);
+      };
+
+      Dom.addEventListener(slideToShow.node, Dom.animationEnd, animationEndCb, false);
+      state;
+    }
+  };
 };
 
 let create = (selector: string): state => {
@@ -94,7 +84,7 @@ let create = (selector: string): state => {
 
   let (observer, observable) = Observable.create();
 
-  let slides = List.map(slide => {
+  let slides = Array.map(slide => {
     {
       isShown: false,
       node: slide,
@@ -102,7 +92,7 @@ let create = (selector: string): state => {
       heading: "",
       subheading: ""
     }
-  }, Array.to_list(slideNodes));
+  }, slideNodes);
 
   clear({container, slides, observer, observable});
 };
