@@ -4,8 +4,8 @@ type node;
 type eventCb('a) = 'a => unit;
 
 type eventName;
-[@bs.val] external animationEnd: eventName = "animationend";
-[@bs.val] external click: eventName = "click";
+let animationEnd: eventName = [%bs.raw {| "animationend" |}];
+let click: eventName = [%bs.raw {| "click" |}];
 
 [@bs.send] external removeChild: (node, node) => unit = "";
 [@bs.send] external appendChild: (node, node) => unit = "";

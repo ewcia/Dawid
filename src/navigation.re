@@ -8,11 +8,11 @@ let initialize = (selector: string, slideshowState: Slideshow.state): unit => {
 
   Dom.addEventListener(prevButton, Dom.click, () => {
     let currentIdx = Js_array.findIndex((s: Slideshow.slide) => s.isShown, slideshowState^.slides);
-    slideshowState := Slideshow.transitionBackwards(slideshowState^, currentIdx - 1);
+    slideshowState := Slideshow.transition(slideshowState^, currentIdx - 1);
   }, false);
 
   Dom.addEventListener(nextButton, Dom.click, () => {
     let currentIdx = Js_array.findIndex((s: Slideshow.slide) => s.isShown, slideshowState^.slides);
-    slideshowState := Slideshow.transitionBackwards(slideshowState^, currentIdx + 1);
+    slideshowState := Slideshow.transition(slideshowState^, currentIdx + 1);
   }, false);
 };

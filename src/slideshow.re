@@ -44,9 +44,7 @@ let showImage = (state: state, idx: int): state => {
   state;
 };
 
-/* TODO: Use images, not indices */
-
-let transitionBackwards = (state: state, idx: int): state => {
+let _transition = (slideClass: string, slideState: slideState, state: state, idx: int): state => {
   switch (Js_array.find(s => s.isShown, state.slides)) {
     | None => {
       state.observer#error("Cannot transition because no slide is shown");
@@ -56,15 +54,18 @@ let transitionBackwards = (state: state, idx: int): state => {
       let slideToShow = state.slides[idx];
       let shownSlideIdx = Js_array.findIndex((===)(shownSlide), state.slides);
 
-      Dom.classListAdd(shownSlide.node, "slide-down");
-      Dom.classListAdd(slideToShow.node, "slide-down");
+      Dom.classListAdd(shownSlide.node, slideClass);
+      Dom.classListAdd(slideToShow.node, slideClass);
       Dom.insertBefore(state.container, slideToShow.node, shownSlide.node);
 
-      state.slides[shownSlideIdx] = {...shownSlide, slideState: SlideDown};
-      state.slides[idx] = {...slideToShow, isShown: true, slideState: SlideDown};
+      state.slides[shownSlideIdx] = {...shownSlide, slideState};
+      state.slides[idx] = {...slideToShow, isShown: true, slideState};
 
       let rec animationEndCb = () => {
         Dom.removeChild(state.container, shownSlide.node);
+
+        Dom.classListRemove(shownSlide.node, slideClass);
+        Dom.classListRemove(slideToShow.node, slideClass);
         state.slides[shownSlideIdx] = {...shownSlide, isShown: false, slideState: Inactive};
         state.slides[idx] = {...state.slides[idx], slideState: Inactive};
         state.observer#next(state);
@@ -74,6 +75,28 @@ let transitionBackwards = (state: state, idx: int): state => {
 
       Dom.addEventListener(slideToShow.node, Dom.animationEnd, animationEndCb, false);
       state;
+    }
+  };
+};
+
+let transitionBackwards = _transition("slide-down", SlideDown);
+let transitionForwards = _transition("slide", Slide);
+
+let transition = (state: state, idx: int): state => {
+  switch (Js_array.findIndex(s => s.isShown, state.slides)) {
+    | -1 => {
+      state.observer#error("Cannot transition because no slide is shown");
+      state;
+    }
+    | shownSlideIdx => {
+      if (shownSlideIdx > idx) {
+        transitionForwards(state, idx);
+      } else if (shownSlideIdx < idx) {
+        transitionBackwards(state, idx);
+      } else {
+        state.observer#error("Same slide, not transitioning");
+        state;
+      }
     }
   };
 };

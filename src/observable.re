@@ -15,12 +15,22 @@ type observer('a, 'b) = {.
 type create('a, 'b) = (unit) => (observer('a, 'b), observable('a, 'b));
 
 let create: create('a, 'b) = () => {
-  let obs: ref(option(observer('a, 'b))) = ref(None);
+  let realObservers: ref(list(observer('a, 'b))) = ref([]);
+  let observer: observer('a, 'b) = {
+    pub closed = ref(false);
+    pub next = (el) => {
+      List.map(o => o#next(el), realObservers^) |> ignore;
+    };
+    pub error = (err) => {
+      List.map(o => o#error(err), realObservers^) |> ignore;
+    };
+    pub complete = () => {
+      List.map(o => o#complete(), realObservers^) |> ignore;
+    }
+  };
   let createResult = createObservable((o) => {
-    Js.log("creator");
-    obs := Some(o);
+    realObservers := Js_list.cons(o, realObservers^);
   });
 
-  Js.log(obs);
-  (Js_option.getExn(obs^), createResult);
+  (observer, createResult);
 };
