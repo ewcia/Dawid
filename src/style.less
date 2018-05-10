@@ -59,6 +59,20 @@ a {
     display: block;
     width: 20px;
     height: 20px;
+
+    circle {
+      transform: matrix(0, -1, -1, 0, 0, 0);
+    }
+  }
+
+  .inner-circle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+
+    transition: top @animation-time @transition-fn;
   }
 }
 

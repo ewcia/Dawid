@@ -4,5 +4,5 @@
 |}];
 
 let slides = Slideshow.create(".slideshow");
+Navigation.initialize(".nav", slides);
 let withDefaultShown = Slideshow.showImage(slides, 0);
-Navigation.initialize(".nav", withDefaultShown);
