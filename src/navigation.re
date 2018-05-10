@@ -71,7 +71,7 @@ let startTimeoutAnimation = (container: Dom.node,
       let passedTime = currentTime - startedAt - delta;
       let progress = float_of_int(passedTime) /. animationTimeout *. 44.0;
 
-      if (progress > 44.0) {
+      if (progress >= 44.0) {
         Slideshow.transition(state^, (idx + 1) mod (Js_array.length(state^.slides))) |> ignore;
       } else {
         Dom.setAttribute(circle, "stroke-dashoffset", string_of_float(progress));

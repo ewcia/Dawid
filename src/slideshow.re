@@ -63,7 +63,6 @@ let guardDuringTransition = (cb: ((state, int) => state)): ((state, int) => stat
 };
 
 let _transition = (slideClass, slideState, state, idx) => {
-  /* don't act if we're during a transition */
   switch (Js_array.find(s => s.isShown, state.slides)) {
     | None => {
       state.observer.next(Error("Cannot transition because no slide is shown"));
