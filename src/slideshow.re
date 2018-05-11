@@ -3,10 +3,7 @@ type slideState = Slide | SlideDown | Inactive;
 type slide = {
   isShown: bool,
   node: Dom.node,
-  slideState: slideState,
-
-  heading: string,
-  subheading: string
+  slideState: slideState
 };
 
 
@@ -74,7 +71,11 @@ let _transition = (slideClass, slideState, state, idx) => {
 
       Dom.classListAdd(shownSlide.node, slideClass);
       Dom.classListAdd(slideToShow.node, slideClass);
-      Dom.insertBefore(state.container, slideToShow.node, shownSlide.node);
+      if (slideState === SlideDown) {
+        Dom.insertBefore(state.container, slideToShow.node, shownSlide.node);
+      } else {
+        Dom.appendChild(state.container, slideToShow.node);
+      };
 
       state.slides[shownSlideIdx] = {...shownSlide, slideState};
       state.slides[idx] = {...slideToShow, isShown: true, slideState};
@@ -131,8 +132,6 @@ let create = (selector: string): state => {
       isShown: false,
       node: slide,
       slideState: Inactive,
-      heading: "",
-      subheading: ""
     }
   }, slideNodes);
 

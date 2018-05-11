@@ -10,21 +10,6 @@ let createDots = (container: Dom.node, slideshowState: Slideshow.state): unit =>
   });
 };
 
-let updateSelectors = (prevButton: Dom.node, nextButton: Dom.node, 
-                       state: Slideshow.state, idx: int): unit => {
-  if (idx < 1) {
-    prevButton##style #= "visibility: hidden";
-  } else {
-    prevButton##style #= "";
-  };
-
-  if (idx > Js_array.length(state.slides) - 2) {
-    nextButton##style #= "visibility: hidden";
-  } else {
-    nextButton##style #= "";
-  }
-};
-
 let currentIdx = (slides: array(Slideshow.slide)) => {
   Js_array.findIndex((s: Slideshow.slide) => s.isShown, slides);
 };
@@ -99,7 +84,6 @@ let initialize = (selector: string, slideshowState: Slideshow.state): unit => {
     switch (update) {
       | State(newState) => {
         slideshowState := newState;
-        updateSelectors(prevButton, nextButton, newState, currentIdx(newState.slides));
         timeoutAnimation := Some(startTimeoutAnimation(container, slideshowState));
       }
       | AnimationStart(nextIdx, newState) => {
@@ -129,9 +113,16 @@ let initialize = (selector: string, slideshowState: Slideshow.state): unit => {
     }, e##path);
     
     if (e##target === prevButton) {
-      Slideshow.transition(slideshowState^, idx - 1) |> ignore;
+      let switchToIdx = if (idx === 0) {
+        Js_array.length(slideshowState^.slides) - 1;
+      } else {
+        idx - 1;
+      };
+
+      Slideshow.transition(slideshowState^, switchToIdx) |> ignore;
     } else if (e##target === nextButton) {
-      Slideshow.transition(slideshowState^, idx + 1) |> ignore;
+      let slidesL = Js_array.length(slideshowState^.slides);
+      Slideshow.transition(slideshowState^, (idx + 1) mod (slidesL)) |> ignore;
     } else {
       switch (circleInPath) {
         | Some(circle) => {

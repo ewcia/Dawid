@@ -22,9 +22,28 @@ a {
   height: 100vh;
   overflow: hidden;
 
-  img {
+  .slide-wrapper {
     height: 100%;
     width: 100%;
+
+    img {
+      height: 100%;
+      width: 100%;
+    }
+
+    h1, h2 {
+      position: absolute;
+    }
+
+    h1 {
+      bottom: 200px;
+      left: 40px;
+    }
+
+    h2 {
+      bottom: 100px;
+      left: 40px;
+    }
 
     &.slide {
       animation: slide @animation-time @transition-fn;
