@@ -1,5 +1,5 @@
 let createDots = (container: Dom.node, slideshowState: Slideshow.state): unit => {
-  let circle = Dom.querySelector(container, ".circle"); 
+  let circle = Dom.querySelector(container, ".circle");
   let nextButton = Dom.querySelector(container, ".next");
 
   Belt.Range.forEach(1, Array.length(slideshowState.slides) - 1, (idx) => {
@@ -11,7 +11,7 @@ let createDots = (container: Dom.node, slideshowState: Slideshow.state): unit =>
 };
 
 let currentIdx = (slides: array(Slideshow.slide)) => {
-  Js_array.findIndex((s: Slideshow.slide) => s.isShown, slides);
+  Js.Array.findIndex((s: Slideshow.slide) => s.isShown, slides);
 };
 
 let animationTimeout = 10.0 *. 1000.0;
@@ -22,12 +22,12 @@ type timeoutAnimation = {
   unpausedAt: ref(option(int))
 };
 
-let startTimeoutAnimation = (container: Dom.node, 
+let startTimeoutAnimation = (container: Dom.node,
                              state: ref(Slideshow.state)): timeoutAnimation => {
   let idx = currentIdx(state^.slides);
 
-  Js_array.forEach(node => 
-               Dom.setAttribute(node, "stroke-dashoffset", "0"), 
+  Js.Array.forEach(node =>
+               Dom.setAttribute(node, "stroke-dashoffset", "0"),
               Dom.querySelectorAll(container, ".circle circle")) |> ignore;
 
   let circle = if (idx === 0) {
@@ -57,9 +57,9 @@ let startTimeoutAnimation = (container: Dom.node,
       let progress = float_of_int(passedTime) /. animationTimeout *. 44.0;
 
       if (progress >= 44.0) {
-        Slideshow.transition(state^, (idx + 1) mod (Js_array.length(state^.slides))) |> ignore;
+        Slideshow.transition(state^, (idx + 1) mod (Js.Array.length(state^.slides))) |> ignore;
       } else {
-        Dom.setAttribute(circle, "stroke-dashoffset", string_of_float(progress));
+        Dom.setAttribute(circle, "stroke-dashoffset", Js.Float.toString(progress));
         Dom.window##requestAnimationFrame(requestFrameCb);
       }
     }
@@ -105,23 +105,23 @@ let initialize = (selector: string, slideshowState: Slideshow.state): unit => {
   Dom.addEventListener(container, Dom.click, (e) => {
     let idx = currentIdx(slideshowState^.slides);
 
-    let circleInPath = Js_array.find(el => {
+    let circleInPath = Js.Array.find(el => {
       switch (el##classList) {
         | Some(_) => Dom.classListContains(el, "circle");
         | None => false;
       }
     }, e##path);
-    
+
     if (e##target === prevButton) {
       let switchToIdx = if (idx === 0) {
-        Js_array.length(slideshowState^.slides) - 1;
+        Js.Array.length(slideshowState^.slides) - 1;
       } else {
         idx - 1;
       };
 
       Slideshow.transition(slideshowState^, switchToIdx) |> ignore;
     } else if (e##target === nextButton) {
-      let slidesL = Js_array.length(slideshowState^.slides);
+      let slidesL = Js.Array.length(slideshowState^.slides);
       Slideshow.transition(slideshowState^, (idx + 1) mod (slidesL)) |> ignore;
     } else {
       switch (circleInPath) {
