@@ -1,7 +1,15 @@
 {
   "name" : "strona-dawida",
-  "reason" : {"react-jsx" : 2},
-  "refmt": 3,
+  "reason" : {"react-jsx" : 3},
   "bs-dependencies": ["reason-react"],
-  "sources": "src"
+  "suffix": ".js",
+  "namespace": true,
+  "sources": "src",
+  "package-specs": [
+    {
+      "module": "commonjs",
+      "in-source": false
+    }
+  ],
+  "refmt": 3
 }

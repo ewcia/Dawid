@@ -24,17 +24,18 @@ type event = {.
   "path": array(node)
 };
 
-[@bs.send] external removeChild: (node, node) => unit = "";
-[@bs.send] external appendChild: (node, node) => unit = "";
-[@bs.send] external cloneNode: (node, bool) => node = "";
-[@bs.send] external setAttribute: (node, string, string) => unit = "";
-[@bs.send] external getAttribute: (node, string) => option(string) = "";
-[@bs.send] external insertBefore: (node, node, node) => unit = "";
-[@bs.send] external addEventListener: (node, eventName, (event => unit), bool) => unit = "";
-[@bs.send] external removeEventListener: (node, eventName, (event => unit)) => unit = "";
+[@bs.send] external removeChild: (node, node) => unit = "removeChild";
+[@bs.send] external appendChild: (node, node) => unit = "appendChild";
+[@bs.send] external cloneNode: (node, bool) => node = "cloneNode";
+[@bs.send] external setAttribute: (node, string, string) => unit = "setAttribute";
+[@bs.send] external getAttribute: (node, string) => option(string) = "getAttribute";
+[@bs.send] external insertBefore: (node, node, node) => unit = "insertBefore";
+[@bs.send] external addEventListener: (node, eventName, (event => unit), bool) => unit = "addEventListener";
+[@bs.send] external removeEventListener: (node, eventName, (event => unit)) => unit = "removeEventListener";
 
-[@bs.send] external querySelector: (node, string) => node = "";
-[@bs.send] external querySelectorAll: (node, string) => array(node) = "";
+[@bs.send] external querySelector: (node, string) => node = "querySelector";
+[@bs.send] external querySelectorAll: (node, string) => array(node) = "querySelectorAll";
+
 [@bs.val] external children: (node) => array(node) = "children";
 
 [@bs.scope "classList"][@bs.send] external classListRemove: (node, string) => unit = "remove";
